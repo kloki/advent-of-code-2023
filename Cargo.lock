@@ -5,3 +5,7 @@ version = 3
 [[package]]
 name = "day-0-cookie-cutter"
 version = "0.1.0"
+
+[[package]]
+name = "day-1-trebuchet"
+version = "0.1.0"
