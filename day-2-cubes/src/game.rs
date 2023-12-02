@@ -1,4 +1,16 @@
-use std::str::FromStr;
+use std::{
+    num::ParseIntError,
+    str::FromStr,
+};
+
+#[derive(Debug)]
+pub enum ParseGameError {
+    InvalidGame(String),
+    InvalidRun(String),
+    InvalidId(ParseIntError),
+    InvalidCount(ParseIntError),
+    InvalidColor(String),
+}
 pub struct Game {
     pub id: usize,
     pub games: Vec<GameRun>,
@@ -16,23 +28,18 @@ enum Color {
     BLUE,
 }
 
-#[derive(Debug)]
-pub struct ParseColorError;
-
 impl FromStr for Color {
-    type Err = ParseColorError;
+    type Err = ParseGameError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         match input {
             "red" => Ok(Color::RED),
             "green" => Ok(Color::GREEN),
             "blue" => Ok(Color::BLUE),
-            _ => Err(ParseColorError),
+            _ => Err(ParseGameError::InvalidColor(input.to_owned())),
         }
     }
 }
-#[derive(Debug)]
-pub struct ParseGameError;
 
 impl FromStr for Game {
     type Err = ParseGameError;
@@ -41,24 +48,27 @@ impl FromStr for Game {
         let splitted: Vec<_> = input.split(":").collect();
         let first = splitted
             .first()
-            .ok_or_else(|| ParseGameError)?
+            .ok_or_else(|| ParseGameError::InvalidGame(input.to_owned()))?
             .split(" ")
             .collect::<Vec<_>>();
-        let id = first.last().ok_or_else(|| ParseGameError)?;
-        let id: usize = id.parse().map_err(|_| ParseGameError)?;
+        let id = first
+            .last()
+            .ok_or_else(|| ParseGameError::InvalidGame(input.to_owned()))?;
+        let id: usize = id.parse().map_err(|e| ParseGameError::InvalidId(e))?;
         let mut games = vec![];
-        for run in splitted.last().ok_or_else(|| ParseGameError)?.split(";") {
-            games.push(run.parse().map_err(|_| ParseGameError)?)
+        for run in splitted
+            .last()
+            .ok_or_else(|| ParseGameError::InvalidGame(input.to_owned()))?
+            .split(";")
+        {
+            games.push(run.parse()?)
         }
         Ok(Game { id, games })
     }
 }
 
-#[derive(Debug)]
-pub struct ParseGameRunError;
-
 impl FromStr for GameRun {
-    type Err = ParseGameRunError;
+    type Err = ParseGameError;
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let mut run = GameRun {
@@ -70,14 +80,13 @@ impl FromStr for GameRun {
             let parts: Vec<_> = n.split(" ").collect();
             let number = parts
                 .first()
-                .ok_or_else(|| ParseGameRunError)?
+                .ok_or_else(|| ParseGameError::InvalidRun(n.to_owned()))?
                 .parse::<usize>()
-                .map_err(|_| ParseGameRunError)?;
+                .map_err(|e| ParseGameError::InvalidCount(e))?;
             let color = parts
                 .last()
-                .ok_or_else(|| ParseGameRunError)?
-                .parse::<Color>()
-                .map_err(|_| ParseGameRunError)?;
+                .ok_or_else(|| ParseGameError::InvalidRun(n.to_owned()))?
+                .parse::<Color>()?;
             match color {
                 Color::RED => run.red = number,
                 Color::GREEN => run.green = number,
@@ -89,10 +98,15 @@ impl FromStr for GameRun {
 }
 
 impl Game {
+    pub fn get_max_values(&self) -> (usize, usize, usize) {
+        (
+            self.games.iter().map(|run| run.red).max().unwrap_or(0),
+            self.games.iter().map(|run| run.green).max().unwrap_or(0),
+            self.games.iter().map(|run| run.blue).max().unwrap_or(0),
+        )
+    }
     pub fn run_1_score(&self) -> usize {
-        let max_red = self.games.iter().map(|run| run.red).max().unwrap_or(0);
-        let max_green = self.games.iter().map(|run| run.green).max().unwrap_or(0);
-        let max_blue = self.games.iter().map(|run| run.blue).max().unwrap_or(0);
+        let (max_red, max_green, max_blue) = self.get_max_values();
         if max_red > 12 || max_green > 13 || max_blue > 14 {
             return 0;
         }
@@ -100,9 +114,7 @@ impl Game {
         self.id
     }
     pub fn min_power_score(&self) -> usize {
-        let max_red = self.games.iter().map(|run| run.red).max().unwrap_or(0);
-        let max_green = self.games.iter().map(|run| run.green).max().unwrap_or(0);
-        let max_blue = self.games.iter().map(|run| run.blue).max().unwrap_or(0);
+        let (max_red, max_green, max_blue) = self.get_max_values();
         max_red * max_green * max_blue
     }
 }
