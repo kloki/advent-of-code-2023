@@ -17,7 +17,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     #[test]
-    fn test_0_cooie_cutter() {
+    fn test_0_cookie_cutter() {
         assert_eq!(1, 1)
     }
 }
