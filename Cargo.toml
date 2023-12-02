@@ -1,3 +1,4 @@
 [workspace]
 
+resolver = "2"
 members = ["day-0-cookie-cutter", "day-1-trebuchet", "day-2-cubes"]
