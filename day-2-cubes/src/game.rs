@@ -1,16 +1,7 @@
-use std::{
-    num::ParseIntError,
-    str::FromStr,
-};
+use std::str::FromStr;
 
 #[derive(Debug)]
-pub enum ParseGameError {
-    InvalidGame(String),
-    InvalidRun(String),
-    InvalidId(ParseIntError),
-    InvalidCount(ParseIntError),
-    InvalidColor(String),
-}
+pub struct ParseGameError;
 pub struct Game {
     pub id: usize,
     pub games: Vec<GameRun>,
@@ -36,7 +27,7 @@ impl FromStr for Color {
             "red" => Ok(Color::RED),
             "green" => Ok(Color::GREEN),
             "blue" => Ok(Color::BLUE),
-            _ => Err(ParseGameError::InvalidColor(input.to_owned())),
+            _ => Err(ParseGameError),
         }
     }
 }
@@ -48,19 +39,13 @@ impl FromStr for Game {
         let splitted: Vec<_> = input.split(":").collect();
         let first = splitted
             .first()
-            .ok_or_else(|| ParseGameError::InvalidGame(input.to_owned()))?
+            .ok_or_else(|| ParseGameError)?
             .split(" ")
             .collect::<Vec<_>>();
-        let id = first
-            .last()
-            .ok_or_else(|| ParseGameError::InvalidGame(input.to_owned()))?;
-        let id: usize = id.parse().map_err(|e| ParseGameError::InvalidId(e))?;
+        let id = first.last().ok_or_else(|| ParseGameError)?;
+        let id: usize = id.parse().map_err(|_| ParseGameError)?;
         let mut games = vec![];
-        for run in splitted
-            .last()
-            .ok_or_else(|| ParseGameError::InvalidGame(input.to_owned()))?
-            .split(";")
-        {
+        for run in splitted.last().ok_or_else(|| ParseGameError)?.split(";") {
             games.push(run.parse()?)
         }
         Ok(Game { id, games })
@@ -80,12 +65,12 @@ impl FromStr for GameRun {
             let parts: Vec<_> = n.split(" ").collect();
             let number = parts
                 .first()
-                .ok_or_else(|| ParseGameError::InvalidRun(n.to_owned()))?
+                .ok_or_else(|| ParseGameError)?
                 .parse::<usize>()
-                .map_err(|e| ParseGameError::InvalidCount(e))?;
+                .map_err(|_| ParseGameError)?;
             let color = parts
                 .last()
-                .ok_or_else(|| ParseGameError::InvalidRun(n.to_owned()))?
+                .ok_or_else(|| ParseGameError)?
                 .parse::<Color>()?;
             match color {
                 Color::RED => run.red = number,
