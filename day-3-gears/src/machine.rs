@@ -3,6 +3,7 @@ use std::collections::HashMap;
 enum Tile {
     Number(u32),
     Symbol,
+    Gear,
     None,
 }
 
@@ -11,15 +12,19 @@ impl Tile {
         if input == '.' {
             return Tile::None;
         }
+        if input == '*' {
+            return Tile::Gear;
+        }
         if let Some(s) = input.to_digit(10) {
             return Tile::Number(s);
         }
         Tile::Symbol
     }
 
-    fn is_symbol(input: char) -> bool {
+    fn is_symbol_like(input: char) -> bool {
         match Tile::build(input) {
             Tile::Symbol => true,
+            Tile::Gear => true,
             _ => false,
         }
     }
@@ -61,13 +66,13 @@ pub fn parse_machine(input: String) -> Vec<Vec<char>> {
 }
 
 pub fn is_near_symbol(machine: &Vec<Vec<char>>, x: usize, y: usize) -> bool {
-    if x != 0 && Tile::is_symbol(machine[x - 1][y]) {
+    if x != 0 && Tile::is_symbol_like(machine[x - 1][y]) {
         return true;
     }
-    if Tile::is_symbol(machine[x][y]) {
+    if Tile::is_symbol_like(machine[x][y]) {
         return true;
     }
-    if x < machine.len() - 1 && Tile::is_symbol(machine[x + 1][y]) {
+    if x < machine.len() - 1 && Tile::is_symbol_like(machine[x + 1][y]) {
         return true;
     }
     false
@@ -167,7 +172,7 @@ pub fn get_gears(machine: &Vec<Vec<char>>, parts: &Vec<Part>) -> Vec<u32> {
     let y_max = machine[0].len() - 1;
     for (x, row) in machine.iter().enumerate() {
         for (y, c) in row.iter().enumerate() {
-            if *c == '*' {
+            if let Tile::Gear = Tile::build(*c) {
                 let gear_set = get_touching_parts(&parts, x, y, x_max, y_max);
 
                 if gear_set.len() == 2 {
