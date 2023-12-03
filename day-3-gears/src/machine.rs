@@ -60,9 +60,8 @@ impl Part {
         1
     }
     fn is_touching(&self, x: usize, y: usize) -> bool {
-        let y_overlap = ((self.y as isize) - (y as isize)).abs() <= self.len() - 1;
-
-        self.x == x && y_overlap
+        let y_overlap = (y as isize) - (self.y as isize);
+        self.x == x && y_overlap < self.len() && y_overlap >= 0
     }
 }
 
@@ -117,6 +116,7 @@ pub fn get_parts(machine: &Vec<Vec<char>>) -> Vec<Part> {
 }
 
 fn get_touching_part(parts: &Vec<Part>, x: usize, y: usize) -> Option<u32> {
+    dbg!(format!("{} {}", x, y));
     for part in parts {
         if part.is_touching(x, y) {
             return Some(part.number);
@@ -133,14 +133,8 @@ fn get_touching_parts(
     y_max: usize,
 ) -> Vec<u32> {
     let mut gears: Vec<u32> = Vec::new();
-    if x > 0 {
-        if let Some(n) = get_touching_part(&parts, x - 1, y) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
-        }
-    }
 
+    dbg!(format!("new {} {}", x, y));
     if x > 0 && y > 0 {
         if let Some(n) = get_touching_part(&parts, x - 1, y - 1) {
             if !gears.contains(&n) {
@@ -149,7 +143,15 @@ fn get_touching_parts(
         }
     }
 
-    if x > 0 && y > y_max {
+    if x > 0 {
+        if let Some(n) = get_touching_part(&parts, x - 1, y) {
+            if !gears.contains(&n) {
+                gears.push(n);
+            }
+        }
+    }
+
+    if x > 0 && y < y_max {
         if let Some(n) = get_touching_part(&parts, x - 1, y + 1) {
             if !gears.contains(&n) {
                 gears.push(n);
@@ -165,8 +167,15 @@ fn get_touching_parts(
         }
     }
 
-    if y > y_max {
+    if y < y_max {
         if let Some(n) = get_touching_part(&parts, x, y + 1) {
+            if !gears.contains(&n) {
+                gears.push(n);
+            }
+        }
+    }
+    if x < x_max && y > 0 {
+        if let Some(n) = get_touching_part(&parts, x + 1, y - 1) {
             if !gears.contains(&n) {
                 gears.push(n);
             }
@@ -180,15 +189,7 @@ fn get_touching_parts(
         }
     }
 
-    if x < x_max && y > 0 {
-        if let Some(n) = get_touching_part(&parts, x + 1, y - 1) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
-        }
-    }
-
-    if x < x_max && y > y_max {
+    if x < x_max && y < y_max {
         if let Some(n) = get_touching_part(&parts, x + 1, y + 1) {
             if !gears.contains(&n) {
                 gears.push(n);
@@ -206,6 +207,8 @@ pub fn get_gears(machine: &Vec<Vec<char>>, parts: &Vec<Part>) -> Vec<u32> {
         for (y, c) in row.iter().enumerate() {
             if *c == '*' {
                 let gear_set = get_touching_parts(&parts, x, y, x_max, y_max);
+
+                dbg!(&gear_set);
                 if gear_set.len() == 2 {
                     gears.push(gear_set[0] * gear_set[1]);
                 }
@@ -246,5 +249,21 @@ mod tests {
 
         assert_eq!(gears.len(), 2);
         assert_eq!(gears.iter().sum::<u32>(), 467835);
+    }
+
+    #[test]
+    fn test_3_is_touching_xxx() {
+        let part = Part {
+            number: 100,
+            x: 5,
+            y: 5,
+        };
+        assert!(part.is_touching(5, 5));
+        assert!(part.is_touching(5, 6));
+        assert!(part.is_touching(5, 7));
+        assert!(!part.is_touching(4, 5));
+        assert!(!part.is_touching(6, 5));
+        assert!(!part.is_touching(5, 4));
+        assert!(!part.is_touching(5, 8));
     }
 }
