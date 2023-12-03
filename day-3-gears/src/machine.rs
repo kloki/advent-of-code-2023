@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 enum Tile {
     Number(u32),
     Symbol,
@@ -22,26 +24,21 @@ impl Tile {
         }
     }
 }
-
+#[derive(Debug)]
 pub struct Part {
     pub number: u32,
-    pub x: usize,
-    pub y: usize,
+    pub locations: Vec<(usize, usize)>,
 }
 
 impl Part {
     fn new() -> Part {
         Part {
             number: 0,
-            x: 0,
-            y: 0,
+            locations: vec![],
         }
     }
     fn append(&mut self, other: u32, x: usize, y: usize) {
-        if !self.active() {
-            self.x = x;
-            self.y = y;
-        }
+        self.locations.push((x, y));
         self.number *= 10;
         self.number += other;
     }
@@ -50,18 +47,8 @@ impl Part {
         self.number != 0
     }
 
-    fn len(&self) -> isize {
-        if self.number > 99 {
-            return 3;
-        }
-        if self.number > 9 {
-            return 2;
-        }
-        1
-    }
     fn is_touching(&self, x: usize, y: usize) -> bool {
-        let y_overlap = (y as isize) - (self.y as isize);
-        self.x == x && y_overlap < self.len() && y_overlap >= 0
+        self.locations.contains(&(x, y))
     }
 }
 
@@ -112,14 +99,14 @@ pub fn get_parts(machine: &Vec<Vec<char>>) -> Vec<Part> {
         current = Part::new();
         near_symbol = false;
     }
+    parts.sort_unstable_by_key(|e| e.number);
     parts
 }
 
-fn get_touching_part(parts: &Vec<Part>, x: usize, y: usize) -> Option<u32> {
-    dbg!(format!("{} {}", x, y));
+fn get_touching_part(parts: &Vec<Part>, x: usize, y: usize) -> Option<((usize, usize), u32)> {
     for part in parts {
         if part.is_touching(x, y) {
-            return Some(part.number);
+            return Some((part.locations[0], part.number));
         }
     }
     None
@@ -132,71 +119,54 @@ fn get_touching_parts(
     x_max: usize,
     y_max: usize,
 ) -> Vec<u32> {
-    let mut gears: Vec<u32> = Vec::new();
+    let mut gears_set: HashMap<(usize, usize), u32> = HashMap::new();
 
-    dbg!(format!("new {} {}", x, y));
     if x > 0 && y > 0 {
         if let Some(n) = get_touching_part(&parts, x - 1, y - 1) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
+            gears_set.insert(n.0, n.1);
         }
     }
 
     if x > 0 {
         if let Some(n) = get_touching_part(&parts, x - 1, y) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
+            gears_set.insert(n.0, n.1);
         }
     }
 
     if x > 0 && y < y_max {
         if let Some(n) = get_touching_part(&parts, x - 1, y + 1) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
+            gears_set.insert(n.0, n.1);
         }
     }
 
     if y > 0 {
         if let Some(n) = get_touching_part(&parts, x, y - 1) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
+            gears_set.insert(n.0, n.1);
         }
     }
 
     if y < y_max {
         if let Some(n) = get_touching_part(&parts, x, y + 1) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
+            gears_set.insert(n.0, n.1);
         }
     }
     if x < x_max && y > 0 {
         if let Some(n) = get_touching_part(&parts, x + 1, y - 1) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
+            gears_set.insert(n.0, n.1);
         }
     }
     if x < x_max {
         if let Some(n) = get_touching_part(&parts, x + 1, y) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
+            gears_set.insert(n.0, n.1);
         }
     }
 
     if x < x_max && y < y_max {
         if let Some(n) = get_touching_part(&parts, x + 1, y + 1) {
-            if !gears.contains(&n) {
-                gears.push(n);
-            }
+            gears_set.insert(n.0, n.1);
         }
     }
-    gears
+    gears_set.values().map(|x| *x).collect()
 }
 
 pub fn get_gears(machine: &Vec<Vec<char>>, parts: &Vec<Part>) -> Vec<u32> {
@@ -208,7 +178,6 @@ pub fn get_gears(machine: &Vec<Vec<char>>, parts: &Vec<Part>) -> Vec<u32> {
             if *c == '*' {
                 let gear_set = get_touching_parts(&parts, x, y, x_max, y_max);
 
-                dbg!(&gear_set);
                 if gear_set.len() == 2 {
                     gears.push(gear_set[0] * gear_set[1]);
                 }
@@ -226,6 +195,17 @@ mod tests {
 ..35..633.
 ......#...
 617*......
+.....+.58.
+..592.....
+......755.
+...$.*....
+.664.598..";
+
+    const TEST_TWIN: &str = "467..114..
+...*......
+..35..633.
+......#...
+617*617...
 .....+.58.
 ..592.....
 ......755.
@@ -252,18 +232,11 @@ mod tests {
     }
 
     #[test]
-    fn test_3_is_touching_xxx() {
-        let part = Part {
-            number: 100,
-            x: 5,
-            y: 5,
-        };
-        assert!(part.is_touching(5, 5));
-        assert!(part.is_touching(5, 6));
-        assert!(part.is_touching(5, 7));
-        assert!(!part.is_touching(4, 5));
-        assert!(!part.is_touching(6, 5));
-        assert!(!part.is_touching(5, 4));
-        assert!(!part.is_touching(5, 8));
+    fn test_3_gears_gear_ratios_twins() {
+        let machine = parse_machine(TEST_TWIN.to_string());
+        let parts = get_parts(&machine);
+        let gears = get_gears(&machine, &parts);
+
+        assert_eq!(gears.len(), 3);
     }
 }
