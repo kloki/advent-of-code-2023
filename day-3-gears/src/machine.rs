@@ -1,5 +1,7 @@
 use std::collections::HashMap;
 
+use toolkit::grid::surrounding_coor;
+
 enum Tile {
     Number(u32),
     Symbol,
@@ -106,38 +108,6 @@ pub fn get_parts(machine: &Vec<Vec<char>>) -> Vec<Part> {
     }
     parts.sort_unstable_by_key(|e| e.number);
     parts
-}
-
-fn surrounding_coor(x: usize, y: usize, x_max: usize, y_max: usize) -> Vec<(usize, usize)> {
-    let mut tiles: Vec<(usize, usize)> = Vec::new();
-    if x > 0 {
-        if y > 0 {
-            tiles.push((x - 1, y - 1));
-        }
-        tiles.push((x - 1, y));
-        if y < y_max {
-            tiles.push((x - 1, y + 1));
-        }
-    }
-    if y > 0 {
-        tiles.push((x, y - 1));
-    }
-
-    if y < y_max {
-        tiles.push((x, y + 1));
-    }
-
-    if x < x_max {
-        if y > 0 {
-            tiles.push((x + 1, y - 1));
-        }
-        tiles.push((x + 1, y));
-        if y < y_max {
-            tiles.push((x + 1, y + 1));
-        }
-    }
-
-    tiles
 }
 
 fn get_touching_part(parts: &Vec<Part>, x: usize, y: usize) -> Option<((usize, usize), u32)> {
