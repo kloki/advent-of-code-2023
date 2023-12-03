@@ -103,6 +103,38 @@ pub fn get_parts(machine: &Vec<Vec<char>>) -> Vec<Part> {
     parts
 }
 
+fn surrounding_coor(x: usize, y: usize, x_max: usize, y_max: usize) -> Vec<(usize, usize)> {
+    let mut tiles: Vec<(usize, usize)> = Vec::new();
+    if x > 0 {
+        if y > 0 {
+            tiles.push((x - 1, y - 1));
+        }
+        tiles.push((x - 1, y));
+        if y < y_max {
+            tiles.push((x - 1, y + 1));
+        }
+    }
+    if y > 0 {
+        tiles.push((x, y - 1));
+    }
+
+    if y < y_max {
+        tiles.push((x, y + 1));
+    }
+
+    if x < x_max {
+        if y > 0 {
+            tiles.push((x + 1, y - 1));
+        }
+        tiles.push((x + 1, y));
+        if y < y_max {
+            tiles.push((x + 1, y + 1));
+        }
+    }
+
+    tiles
+}
+
 fn get_touching_part(parts: &Vec<Part>, x: usize, y: usize) -> Option<((usize, usize), u32)> {
     for part in parts {
         if part.is_touching(x, y) {
@@ -121,48 +153,8 @@ fn get_touching_parts(
 ) -> Vec<u32> {
     let mut gears_set: HashMap<(usize, usize), u32> = HashMap::new();
 
-    if x > 0 && y > 0 {
-        if let Some(n) = get_touching_part(&parts, x - 1, y - 1) {
-            gears_set.insert(n.0, n.1);
-        }
-    }
-
-    if x > 0 {
-        if let Some(n) = get_touching_part(&parts, x - 1, y) {
-            gears_set.insert(n.0, n.1);
-        }
-    }
-
-    if x > 0 && y < y_max {
-        if let Some(n) = get_touching_part(&parts, x - 1, y + 1) {
-            gears_set.insert(n.0, n.1);
-        }
-    }
-
-    if y > 0 {
-        if let Some(n) = get_touching_part(&parts, x, y - 1) {
-            gears_set.insert(n.0, n.1);
-        }
-    }
-
-    if y < y_max {
-        if let Some(n) = get_touching_part(&parts, x, y + 1) {
-            gears_set.insert(n.0, n.1);
-        }
-    }
-    if x < x_max && y > 0 {
-        if let Some(n) = get_touching_part(&parts, x + 1, y - 1) {
-            gears_set.insert(n.0, n.1);
-        }
-    }
-    if x < x_max {
-        if let Some(n) = get_touching_part(&parts, x + 1, y) {
-            gears_set.insert(n.0, n.1);
-        }
-    }
-
-    if x < x_max && y < y_max {
-        if let Some(n) = get_touching_part(&parts, x + 1, y + 1) {
+    for (x, y) in surrounding_coor(x, y, x_max, y_max) {
+        if let Some(n) = get_touching_part(&parts, x, y) {
             gears_set.insert(n.0, n.1);
         }
     }
