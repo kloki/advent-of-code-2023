@@ -2,6 +2,7 @@
 
 resolver = "2"
 members = [
+  "toolkit",
   "day-0-cookie-cutter",
   "day-1-trebuchet",
   "day-2-cubes",

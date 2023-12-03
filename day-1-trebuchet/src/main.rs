@@ -1,15 +1,8 @@
-use std::{env, fs};
+use toolkit::input::get_input;
 
 const NUMBERS: [&str; 10] = [
     "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
 ];
-
-fn get_input() -> String {
-    let args: Vec<String> = env::args().collect();
-    let fallback = "./input/input.txt".to_owned();
-    let path = &args.get(1).unwrap_or(&fallback);
-    fs::read_to_string(path).expect("Can't read file")
-}
 
 fn parse_run_1(input: &str) -> Vec<u32> {
     let mut numbers: Vec<u32> = vec![];
