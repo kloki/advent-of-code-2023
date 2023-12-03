@@ -13,3 +13,7 @@ version = "0.1.0"
 [[package]]
 name = "day-2-cubes"
 version = "0.1.0"
+
+[[package]]
+name = "day-3-gears"
+version = "0.1.0"
