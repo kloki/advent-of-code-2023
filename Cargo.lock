@@ -31,5 +31,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-4-scratch-cards"
+version = "0.1.0"
+dependencies = [
+ "toolkit",
+]
+
+[[package]]
 name = "toolkit"
 version = "0.1.0"
