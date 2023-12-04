@@ -106,7 +106,6 @@ pub fn get_parts(machine: &Vec<Vec<char>>) -> Vec<Part> {
         current = Part::new();
         near_symbol = false;
     }
-    parts.sort_unstable_by_key(|e| e.number);
     parts
 }
 
