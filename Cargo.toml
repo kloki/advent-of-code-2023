@@ -9,4 +9,5 @@ members = [
   "day-3-gears",
   "day-4-scratch-cards",
   "day-5-seeds",
+  "day-6-boat-race",
 ]

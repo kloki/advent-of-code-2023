@@ -45,5 +45,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-6-boat-race"
+version = "0.1.0"
+dependencies = [
+ "toolkit",
+]
+
+[[package]]
 name = "toolkit"
 version = "0.1.0"
