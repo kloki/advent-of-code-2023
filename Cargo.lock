@@ -52,5 +52,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-7-camel-card"
+version = "0.1.0"
+dependencies = [
+ "toolkit",
+]
+
+[[package]]
 name = "toolkit"
 version = "0.1.0"

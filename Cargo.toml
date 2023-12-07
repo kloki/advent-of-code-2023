@@ -10,4 +10,5 @@ members = [
   "day-4-scratch-cards",
   "day-5-seeds",
   "day-6-boat-race",
+  "day-7-camel-card",
 ]
