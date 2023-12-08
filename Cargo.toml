@@ -11,4 +11,5 @@ members = [
   "day-5-seeds",
   "day-6-boat-race",
   "day-7-camel-card",
+  "day-8-nodes",
 ]
