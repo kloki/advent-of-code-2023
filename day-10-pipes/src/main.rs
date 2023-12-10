@@ -5,7 +5,13 @@ mod tile;
 fn main() {
     let contents = get_input_name("./input/input_readable.txt".to_owned());
     let board = parse_board(&contents);
-    dbg!(board);
+    let (start, _) = board
+        .iter()
+        .filter(|(_, t)| t.is_start())
+        .collect::<Vec<_>>()[0];
+    dbg!(start);
+    let res = board.get(start);
+    dbg!(res);
 }
 #[cfg(test)]
 mod tests {

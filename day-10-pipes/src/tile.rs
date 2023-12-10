@@ -1,4 +1,5 @@
-#[derive(Debug)]
+use toolkit::grid::Grid;
+#[derive(Debug, Clone)]
 pub enum TileType {
     Start,
     Empty,
@@ -53,7 +54,7 @@ impl TileType {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Tile {
     tt: TileType,
     distance: Option<usize>,
@@ -68,10 +69,16 @@ impl Tile {
         }
         Ok(Tile { tt, distance })
     }
+    pub fn is_start(&self) -> bool {
+        match self.tt {
+            TileType::Start => true,
+            _ => false,
+        }
+    }
 }
 
-pub fn parse_board(board: &String) -> Vec<Vec<Tile>> {
-    board
+pub fn parse_board(board: &String) -> Grid<Tile> {
+    let tiles = board
         .trim()
         .split("\n")
         .map(|line| {
@@ -79,7 +86,8 @@ pub fn parse_board(board: &String) -> Vec<Vec<Tile>> {
                 .map(|c| Tile::from_char(c).unwrap())
                 .collect::<Vec<_>>()
         })
-        .collect::<Vec<_>>()
+        .collect::<Vec<_>>();
+    Grid(tiles)
 }
 
 #[cfg(test)]
