@@ -1,8 +1,11 @@
+use tile::parse_board;
 use toolkit::input::get_input_name;
+mod tile;
 
 fn main() {
     let contents = get_input_name("./input/input_readable.txt".to_owned());
-    println!("{}", contents);
+    let board = parse_board(&contents);
+    dbg!(board);
 }
 #[cfg(test)]
 mod tests {
