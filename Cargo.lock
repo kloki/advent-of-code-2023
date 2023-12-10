@@ -17,6 +17,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-10-pipes"
+version = "0.1.0"
+dependencies = [
+ "toolkit",
+]
+
+[[package]]
 name = "day-2-cubes"
 version = "0.1.0"
 dependencies = [
@@ -60,6 +67,13 @@ dependencies = [
 
 [[package]]
 name = "day-8-nodes"
+version = "0.1.0"
+dependencies = [
+ "toolkit",
+]
+
+[[package]]
+name = "day-9-oasis"
 version = "0.1.0"
 dependencies = [
  "toolkit",
