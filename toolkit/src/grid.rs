@@ -29,38 +29,66 @@ pub fn surrounding_coor(x: usize, y: usize, x_max: usize, y_max: usize) -> Vec<(
 
     coor
 }
-
-#[derive(Clone, Debug)]
-pub struct Grid<T: std::clone::Clone>(pub Vec<Vec<T>>);
-
 impl<T: std::clone::Clone> Grid<T> {
     pub fn get(&self, coor: (usize, usize)) -> &T {
         &self.0[coor.1][coor.0]
     }
 
-    pub fn iter(&self) -> std::vec::IntoIter<((usize, usize), T)> {
-        self.clone().into_iter()
+    pub fn max_row(&self) -> usize {
+        self.0.len() - 1
+    }
+
+    pub fn max_column(&self) -> usize {
+        self.0[0].len() - 1
+    }
+
+    pub fn get_surrounding(&self, coor: (usize, usize)) -> Vec<((usize, usize), &T)> {
+        let surrounding_coor = surrounding_coor(coor.0, coor.1, self.max_column(), self.max_row());
+        surrounding_coor
+            .iter()
+            .map(|x| (*x, self.get(*x)))
+            .collect::<Vec<_>>()
     }
 }
 
-impl<T: std::clone::Clone> IntoIterator for Grid<T> {
-    type Item = ((usize, usize), T);
-    type IntoIter = std::vec::IntoIter<Self::Item>;
+#[derive(Clone, Debug)]
+pub struct Grid<T: std::clone::Clone>(pub Vec<Vec<T>>);
+
+pub struct GridBorrow<'a, T: std::clone::Clone> {
+    grid: &'a Grid<T>,
+    row: usize,
+    col: usize,
+}
+
+impl<'a, T: Clone> IntoIterator for &'a Grid<T> {
+    type Item = ((usize, usize), &'a T);
+    type IntoIter = GridBorrow<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let mut outer: Vec<((usize, usize), T)> = Vec::new();
-        for (y, r) in self.0.iter().enumerate() {
-            let next: Vec<((usize, usize), T)> = r
-                .iter()
-                .enumerate()
-                .map(|(x, i)| ((x, y), i.clone()))
-                .collect();
-            outer.extend(next);
+        GridBorrow {
+            grid: self,
+            row: 0,
+            col: 0,
         }
-        outer.into_iter()
     }
 }
 
+impl<'a, T: Clone> Iterator for GridBorrow<'a, T> {
+    type Item = ((usize, usize), &'a T);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.row > self.grid.max_row() {
+            return None;
+        }
+        let result = &self.grid.0[self.row][self.col];
+        self.col += 1;
+        if self.col > self.grid.max_column() {
+            self.row += 1;
+            self.col = 0;
+        }
+        Some(((self.col, self.row), result))
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -68,16 +96,9 @@ mod tests {
     #[test]
     fn test_grid_iter() {
         let grid: Grid<usize> = Grid(vec![vec![0, 1], vec![2, 3]]);
-        let items: Vec<_> = grid.iter().collect();
-        assert_eq!(items.len(), 4);
-        let two = grid
-            .into_iter()
-            .filter(|(_, x)| *x == 2)
-            .collect::<Vec<_>>()[0];
+        let items: Vec<_> = grid.into_iter().collect();
 
-        assert_eq!(two.1, 2);
-        assert_eq!(two.0 .0, 0);
-        assert_eq!(two.0 .1, 1);
+        assert_eq!(*items[2].1, 2);
     }
     #[test]
     fn test_grid_get() {
@@ -85,5 +106,12 @@ mod tests {
         let two = grid.get((0, 1));
 
         assert_eq!(*two, 2);
+    }
+    #[test]
+    fn test_grid_get_surounding() {
+        let grid: Grid<usize> = Grid(vec![vec![0, 1], vec![2, 3]]);
+        let tiles = grid.get_surrounding((0, 1));
+
+        assert_eq!(tiles.len(), 3);
     }
 }

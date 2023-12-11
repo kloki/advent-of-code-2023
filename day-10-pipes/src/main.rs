@@ -6,7 +6,7 @@ fn main() {
     let contents = get_input_name("./input/input_readable.txt".to_owned());
     let board = parse_board(&contents);
     let (start, _) = board
-        .iter()
+        .into_iter()
         .filter(|(_, t)| t.is_start())
         .collect::<Vec<_>>()[0];
     dbg!(start);
