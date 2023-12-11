@@ -87,7 +87,7 @@ pub fn parse_board(board: &String) -> Grid<Tile> {
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
-    Grid(tiles)
+    tiles.try_into().unwrap()
 }
 
 #[cfg(test)]

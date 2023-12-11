@@ -50,40 +50,59 @@ pub fn neighbor_coor(x: usize, y: usize, x_max: usize, y_max: usize) -> Vec<(usi
     coor
 }
 #[derive(Clone, Debug)]
-pub struct Grid<T: Clone>(pub Vec<Vec<T>>);
+pub struct Grid<T: Clone> {
+    pub grid: Vec<Vec<T>>,
+}
 
 impl<T: std::clone::Clone> Grid<T> {
+    pub fn new(rows: usize, columns: usize, placeholder: T) -> Grid<T> {
+        Grid {
+            grid: vec![vec![placeholder; columns]; rows],
+        }
+    }
     pub fn get(&self, coor: (usize, usize)) -> Option<&T> {
         if coor.0 > self.max_column() || coor.1 > self.max_row() {
             return None;
         }
-        Some(&self.0[coor.1][coor.0])
+        Some(&self.grid[coor.1][coor.0])
     }
 
     pub fn max_row(&self) -> usize {
-        self.0.len() - 1
+        self.grid.len() - 1
     }
 
     pub fn max_column(&self) -> usize {
-        self.0[0].len() - 1
+        self.grid[0].len() - 1
     }
 
     pub fn get_surrounding(&self, coor: (usize, usize)) -> Vec<((usize, usize), &T)> {
         let surrounding_coor = surrounding_coor(coor.0, coor.1, self.max_column(), self.max_row());
         surrounding_coor
             .iter()
-            .map(|x| (*x, &self.0[x.0][x.1]))
+            .map(|x| (*x, &self.grid[x.0][x.1]))
             .collect::<Vec<_>>()
     }
     pub fn get_neighbors(&self, coor: (usize, usize)) -> Vec<((usize, usize), &T)> {
         let neighbor_coor = neighbor_coor(coor.0, coor.1, self.max_column(), self.max_row());
         neighbor_coor
             .iter()
-            .map(|x| (*x, &self.0[x.0][x.1]))
+            .map(|x| (*x, &self.grid[x.0][x.1]))
             .collect::<Vec<_>>()
     }
 }
 
+impl<T: Clone> TryFrom<Vec<Vec<T>>> for Grid<T> {
+    type Error = &'static str;
+
+    fn try_from(input: Vec<Vec<T>>) -> Result<Self, Self::Error> {
+        let width = input[0].len();
+        if input.iter().filter(|x| x.len() != width).count() != 0 {
+            Err("Not all rows have the same length.")
+        } else {
+            Ok(Grid { grid: input })
+        }
+    }
+}
 pub struct GridBorrow<'a, T: std::clone::Clone> {
     grid: &'a Grid<T>,
     row: usize,
@@ -110,7 +129,7 @@ impl<'a, T: Clone> Iterator for GridBorrow<'a, T> {
         if self.row > self.grid.max_row() {
             return None;
         }
-        let result = &self.grid.0[self.row][self.col];
+        let result = &self.grid.grid[self.row][self.col];
         let coor = (self.row, self.col);
         self.col += 1;
         if self.col > self.grid.max_column() {
@@ -126,9 +145,12 @@ mod tests {
 
     #[derive(Clone, PartialEq, Eq, Debug)]
     pub struct Tile(usize);
+
     #[test]
     fn test_grid_iter() {
-        let grid: Grid<Tile> = Grid(vec![vec![Tile(0), Tile(1)], vec![Tile(2), Tile(3)]]);
+        let grid: Grid<Tile> = vec![vec![Tile(0), Tile(1)], vec![Tile(2), Tile(3)]]
+            .try_into()
+            .unwrap();
         let items: Vec<_> = grid.into_iter().collect();
 
         assert_eq!(items[0], ((0, 0), &Tile(0)));
@@ -138,7 +160,7 @@ mod tests {
     }
     #[test]
     fn test_grid_get() {
-        let grid: Grid<usize> = Grid(vec![vec![0, 1], vec![2, 3]]);
+        let grid: Grid<usize> = vec![vec![0, 1], vec![2, 3]].try_into().unwrap();
         let two = grid.get((0, 1));
 
         assert_eq!(*two.unwrap(), 2);
@@ -148,7 +170,9 @@ mod tests {
     }
     #[test]
     fn test_grid_get_surounding() {
-        let grid: Grid<usize> = Grid(vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 9]]);
+        let grid: Grid<usize> = vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 9]]
+            .try_into()
+            .unwrap();
         assert_eq!(grid.get_surrounding((0, 1)).len(), 5);
         assert_eq!(grid.get_surrounding((0, 0)).len(), 3);
         assert_eq!(grid.get_surrounding((1, 1)).len(), 8);
@@ -156,7 +180,9 @@ mod tests {
 
     #[test]
     fn test_grid_get_neighbors() {
-        let grid: Grid<usize> = Grid(vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 9]]);
+        let grid: Grid<usize> = vec![vec![0, 1, 2], vec![3, 4, 5], vec![6, 7, 9]]
+            .try_into()
+            .unwrap();
         assert_eq!(grid.get_neighbors((0, 1)).len(), 3);
         assert_eq!(grid.get_neighbors((0, 0)).len(), 2);
         assert_eq!(grid.get_neighbors((1, 1)).len(), 4);
