@@ -8,6 +8,5 @@ fn main() {
     let contents = contents.replace("7", "┐");
     let contents = contents.replace("L", "└");
     let contents = contents.replace("J", "┘");
-    let contents = contents.replace(".", " ");
     println!("{}", contents);
 }

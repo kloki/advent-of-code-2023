@@ -64,7 +64,13 @@ impl<T: std::clone::Clone> Grid<T> {
         if coor.0 > self.max_column() || coor.1 > self.max_row() {
             return None;
         }
-        Some(&self.grid[coor.1][coor.0])
+        Some(&self.grid[coor.0][coor.1])
+    }
+    pub fn get_mut(&mut self, coor: (usize, usize)) -> Option<&mut T> {
+        if coor.0 > self.max_column() || coor.1 > self.max_row() {
+            return None;
+        }
+        Some(&mut self.grid[coor.0][coor.1])
     }
 
     pub fn max_row(&self) -> usize {

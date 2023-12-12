@@ -16,7 +16,7 @@ pub struct TileParseError;
 impl TileType {
     pub fn from_char(c: char) -> Result<TileType, TileParseError> {
         match c {
-            ' ' => Ok(TileType::Empty),
+            '.' => Ok(TileType::Empty),
             'S' => Ok(TileType::Start),
             '─' => Ok(TileType::Horizontal),
             '│' => Ok(TileType::Vertical),
@@ -30,25 +30,27 @@ impl TileType {
 
     pub fn left_access(&self) -> bool {
         match self {
-            TileType::Horizontal | TileType::LeftDown | TileType::LeftUp => true,
+            TileType::Start | TileType::Horizontal | TileType::LeftDown | TileType::LeftUp => true,
             _ => false,
         }
     }
     pub fn right_access(&self) -> bool {
         match self {
-            TileType::Horizontal | TileType::RightDown | TileType::RightUp => true,
+            TileType::Start | TileType::Horizontal | TileType::RightDown | TileType::RightUp => {
+                true
+            }
             _ => false,
         }
     }
     pub fn up_access(&self) -> bool {
         match self {
-            TileType::Vertical | TileType::LeftUp | TileType::RightUp => true,
+            TileType::Start | TileType::Vertical | TileType::LeftUp | TileType::RightUp => true,
             _ => false,
         }
     }
     pub fn down_access(&self) -> bool {
         match self {
-            TileType::Vertical | TileType::LeftDown | TileType::RightDown => true,
+            TileType::Start | TileType::Vertical | TileType::LeftDown | TileType::RightDown => true,
             _ => false,
         }
     }
@@ -56,8 +58,8 @@ impl TileType {
 
 #[derive(Debug, Clone)]
 pub struct Tile {
-    tt: TileType,
-    distance: Option<usize>,
+    pub tt: TileType,
+    pub distance: Option<usize>,
 }
 
 impl Tile {
@@ -74,6 +76,9 @@ impl Tile {
             TileType::Start => true,
             _ => false,
         }
+    }
+    pub fn on_loop(&self) -> bool {
+        self.distance.is_some()
     }
 }
 
@@ -93,11 +98,11 @@ pub fn parse_board(board: &String) -> Grid<Tile> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    const TEST_INPUT: &str = "  ┌┐
- ┌┘│
-S┘ └┐
+    const TEST_INPUT: &str = "..┌┐.
+.┌┘│.
+S┘.└┐
 │┌──┘
-└┘   ";
+└┘...";
 
     #[test]
     fn test_parse() {
