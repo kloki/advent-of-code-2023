@@ -68,7 +68,38 @@ fn enclosed_area(board: &Grid<Tile>) -> usize {
     let mut counter = 0;
     for (coor, tile) in board.into_iter() {
         if !tile.on_loop() {
-            counter += 1;
+            let mut jumps = 0;
+            let mut up_in = false;
+            let mut down_in = false;
+            for i in 0..coor.1 {
+                let tile = &board.grid[coor.0][i];
+                if tile.on_loop() {
+                    match tile.tt {
+                        tile::TileType::Vertical => jumps += 1,
+                        tile::TileType::RightUp => up_in = true,
+                        tile::TileType::RightDown => down_in = true,
+                        tile::TileType::LeftDown => {
+                            if up_in {
+                                jumps += 1
+                            }
+                            up_in = false;
+                            down_in = false;
+                        }
+                        tile::TileType::LeftUp => {
+                            if down_in {
+                                jumps += 1
+                            }
+                            up_in = false;
+                            down_in = false;
+                        }
+
+                        _ => {}
+                    }
+                }
+            }
+            if (jumps % 2) != 0 {
+                counter += 1;
+            }
         }
     }
     counter
@@ -97,16 +128,16 @@ S┘.└┐
 │┌──┘
 └┘...";
 
-    const TEST_INPUT2: &str = "┌┌┐┌S┌┐┌┐┌┐┌┐┌┐┌───┐
-└│└┘││││││││││││┌──┘
-┌└─┐└┘└┘││││││└┘└─┐┐
-┌──┘┌──┐││└┘└┘┐┌┐┌┘─
-└───┘┌─┘└┘.││─┌┘└┘┘┐
-│┌│┌─┘┌───┐┌┐─└┐└│┐│
-│┌┌┘┌┐└┐┌─┘┌┐│┘└───┐
-┐─└─┘└┐││┌┐│└┐┌─┐┌┐│
-└.└┐└┌┘│││││┌┘└┐││└┘
-└┐┘└┘└─┘└┘└┘└──┘└┘.└";
+    const TEST_INPUT2: &str = "...........
+.S───────┐.
+.│┌─────┐│.
+.││.....││.
+.││.....││.
+.│└─┐.┌─┘│.
+.│..│.│..│.
+.└──┘.└──┘.
+...........
+";
     #[test]
     fn test_build_loop() {
         let mut board = parse_board(&TEST_INPUT.to_string());
@@ -125,6 +156,6 @@ S┘.└┐
         let mut board = parse_board(&TEST_INPUT2.to_string());
         build_loop(&mut board);
 
-        assert_eq!(enclosed_area(&board), 10)
+        assert_eq!(enclosed_area(&board), 4)
     }
 }
