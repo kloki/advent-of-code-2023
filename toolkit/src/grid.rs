@@ -1,3 +1,4 @@
+use std::fmt;
 pub fn surrounding_coor(x: usize, y: usize, x_max: usize, y_max: usize) -> Vec<(usize, usize)> {
     let mut coor: Vec<(usize, usize)> = Vec::new();
     if x > 0 {
@@ -49,6 +50,7 @@ pub fn neighbor_coor(x: usize, y: usize, x_max: usize, y_max: usize) -> Vec<(usi
 
     coor
 }
+
 #[derive(Clone, Debug)]
 pub struct Grid<T: Clone> {
     pub grid: Vec<Vec<T>>,
@@ -143,6 +145,19 @@ impl<'a, T: Clone> Iterator for GridBorrow<'a, T> {
             self.col = 0;
         }
         Some((coor, result))
+    }
+}
+impl<T: Clone + std::fmt::Display> fmt::Display for Grid<T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // Customize so only `x` and `y` are denoted.
+        let payload = self
+            .grid
+            .iter()
+            .map(|row| row.iter().map(|x| x.to_string()).collect::<String>())
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        write!(f, "{}", payload)
     }
 }
 #[cfg(test)]

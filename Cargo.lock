@@ -24,6 +24,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day-11-galaxies"
+version = "0.1.0"
+dependencies = [
+ "toolkit",
+]
+
+[[package]]
 name = "day-2-cubes"
 version = "0.1.0"
 dependencies = [
