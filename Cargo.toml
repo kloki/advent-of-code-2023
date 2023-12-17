@@ -15,4 +15,5 @@ members = [
   "day-9-oasis",
   "day-10-pipes",
   "day-11-galaxies",
+  "day-15-lens",
 ]
